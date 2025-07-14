@@ -4,17 +4,13 @@ from machine import Pin, I2C, ADC
 import os
 import gc
 import network
+from ntptime import settime
 from math import sin
 from umqtt.simple import MQTTClient
 import secrets #to read Wifi and Adafruit details
 
+
 pico_led.off()
-
-
-# Get the local time as a tuple(collection of numbers that you can put together and index)
-local_time = localtime()
-print(f"Date: {local_time[0]}-{local_time[1]}-{local_time[2]}")
-print(f"Time: {local_time[3]}:{local_time[4]:02}:{local_time[5]:02}")
 
 #wifi details, store in secrets.py
 wifi_ssid = secrets.wifi_ssid
@@ -35,6 +31,19 @@ if wlan.isconnected():
     sleep(0.5)
     pico_led.on()
     print ("Logging to MQTT Server.")
+      
+    try:
+        settime()
+    except:
+        print ("error setting time °_°")
+        file=open(log_file,"a")
+        file.write( f"error setting time")
+        file.close()
+        
+    # Get the local time as a tuple (collection of numbers that you can put together and index)
+    local_time = localtime()
+    print(f"Date: {local_time[0]}-{local_time[1]}-{local_time[2]}")
+    print(f"Time: {local_time[3]}:{local_time[4]:02}:{local_time[5]:02}")
 
 else:
     print ("Not Connected to WiFi Network.")
@@ -107,6 +116,16 @@ def calcRh(binary) :
     return rhCalc
 
 while True:
+    
+    try:
+        settime()
+    except:
+        print ("error setting time °_°")
+        file=open(log_file,"a")
+        file.write( f"error setting time")
+        file.close()
+        
+    
     # Test H [Temperature]
     i2c.writeto(addrDecimal, '\x00') #request temp reading
     sleep(0.3) # delay to alow tep reading
